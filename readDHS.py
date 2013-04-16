@@ -6,7 +6,7 @@ import csv
 import numpy
 import matplotlib.pyplot as plt
 import matplotlib
-
+import json
 
 data = []
 DHS = {}
@@ -214,7 +214,7 @@ def main():
 				if re.search('ook2.csv',file) == None:
 					readFile(os.path.join(root, file))
 
-	# perYear()			# Find the number of immigrants per year for US
+    	perYear()			# Find the number of immigrants per year for US
 	print DHS['2003']['State of Residence'][' Texas']
 	stateInfo = getStates(DHS)	# Determine immigration by states
 	print stateInfo
@@ -226,6 +226,10 @@ def main():
 	for k in l:
 		print k
 
+	# Write dictionary to a file
+	file = open('data.json','w')
+	file.write(json.dumps(DHS))
+	file.close()
 	"""for year in DHS:
 		print year
 		for category in DHS[year]:
