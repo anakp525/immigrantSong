@@ -17,13 +17,13 @@ def createBy(data, how):
 def mergeAll():
 	pass
 
-def writeCSV(info):
-	with open('US.csv', 'wb') as file:
+def writeCSV(info, fileName):
+	with open(fileName, 'wb') as file:
 		writer = csv.writer(file)
 		for row in sorted(info, key = lambda x:x[0]):
 			line = []
 			for value in row:
-				if value == 'Occupation' or value == "Leading countries of birth":
+				if value == 'Occupation' or value == "Leading countries of birth" or value == "Leading states of permanent residence":
 					continue
 				line.append(value)
 			writer.writerow(line)
@@ -169,21 +169,20 @@ def createRows(data):
 		state = str(state)
 		row = []
 		row.append(state)
-		try:
-			for year in years:
-				year = str(year)
-				row.append(year)
-				for cat in data[state][year]:
-					if cat == 'Age' or cat == 'Marital status':
-						continue
-					row.append(cat)
-					if cat == 'Occupation' or cat == "Leading countries of birth":
-						for k in data[state][year][cat]:
-							row.append(k)
-					else:
-						row.append(data[state][year][cat])
-		except:
-			print cat, state, year
+		for year in years:
+			year = str(year)
+			if year not in data[state]:
+				continue
+			row.append(year)
+			for cat in data[state][year]:
+				if cat == 'Age' or cat == 'Marital status':
+					continue
+				row.append(cat)
+				if cat == 'Occupation' or cat == "Leading states of permanent residence" or cat == "Leading countries of birth":
+					for k in data[state][year][cat]:
+						row.append(k)
+				else:
+					row.append(data[state][year][cat])
 		rows.append(row)
 	for r in rows:
 		print r
@@ -199,7 +198,7 @@ def main():
 	#createCSVFiles(DHS)
 	byState = dataByState(DHS)
 	states = createRows(byState)
-	writeCSV(states)
+	writeCSV(states, 'US.csv')
 	#print len(byState)	
 	#for k in sorted(byState, key=byState.get):
 	#	print k
@@ -207,6 +206,8 @@ def main():
 	#createExcel(d)
 
 	byCountry = dataByState(DHS, 'Country of Birth')
+	countries = createRows(byCountry)
+	writeCSV(countries, 'world.csv')
 	#print DHS
 
 main()
