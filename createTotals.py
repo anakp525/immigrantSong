@@ -73,6 +73,8 @@ def dataByState(data, type = 'State of Residence'):
 				numberImmigrants = 0
 				for value in data[year][type][region][cat]:
 					value = str(value)
+					if value == 'Unknown' or value == 'Other' or value == "No occupation" or value == "No occupation/not working outside home":
+						continue
 					#if value not in d[region][year][cat]:
 					#	d[region][year][cat][value] = {}
 					total = getTotal(data[year][type][region][cat][value])
