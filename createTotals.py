@@ -20,9 +20,11 @@ def mergeAll():
 def writeCSV(info):
 	with open('US.csv', 'wb') as file:
 		writer = csv.writer(file)
-		for row in info:
+		for row in sorted(info, key = lambda x:x[0]):
 			line = []
 			for value in row:
+				if value == 'Occupation' or value == "Leading countries of birth":
+					continue
 				line.append(value)
 			writer.writerow(line)
 		file.close()
@@ -46,17 +48,23 @@ def dataByState(data, type = 'State of Residence'):
 	US = []
 	numberImmigrants = 0
 	for year in data:
+		year = str(year)
 		for region in data[year][type]:
+			region = str(region)
 			if region == 'totals':
 				continue
 			if region not in d:
 				d[region] = {}
 			d[region][year] = {}
 			for cat in data[year][type][region]:
+				cat = str(cat)
 				if cat == 'total':
 					m = data[year][type][region][cat]['m']
 					f = data[year][type][region][cat]['f']
 					u = data[year][type][region][cat]['u']
+					d[region][year]['number of immigrants'] = m+f+u
+					d[region][year]['number female'] = f
+					d[region][year]['number male'] = m
 					US.append( (region, year, 'Number of immigrants:', {'u':u, 'f':f, 'm':m}) )
 					continue
 				if cat not in d[region][year]:
@@ -64,19 +72,22 @@ def dataByState(data, type = 'State of Residence'):
 				topValue = ('blah', -100)
 				numberImmigrants = 0
 				for value in data[year][type][region][cat]:
-					if value not in d[region][year][cat]:
-						d[region][year][cat][value] = {}
+					value = str(value)
+					#if value not in d[region][year][cat]:
+					#	d[region][year][cat][value] = {}
 					total = getTotal(data[year][type][region][cat][value])
 					numberImmigrants = numberImmigrants + total
 					if total > topValue[1]:
-						topValue = (value, total)
-					for gender in data[year][type][region][cat][value]:
+						topValue = (str(value), total)
+					"""for gender in data[year][type][region][cat][value]:
 						if gender not in d[region][year][cat][value]:
 							d[region][year][cat][value][gender] = data[year][type][region][cat][value][gender]
 					
 					m = data[year][type][region][cat][value]['m']
 					f = data[year][type][region][cat][value]['f']
 					u = data[year][type][region][cat][value]['u']
+					"""
+				d[region][year][cat][topValue[0]] = topValue[1]
 				#print numberImmigrants
 				if numberImmigrants == 0:
 					US.append( (region, year, cat, topValue, 100.0) )
@@ -87,7 +98,7 @@ def dataByState(data, type = 'State of Residence'):
 	#for key in sorted(US, key=lambda x:x[0]):
 	#	print key
 	
-	return US 
+	return d #US 
 
 def convertToDict(l):
 	rows = []
@@ -137,7 +148,7 @@ def convertToDict(l):
 		else:				# Last state
 			pass
 			
-		print row
+		#print row
 	#for k in states:
 	#	print k, states[k]
 	return states
@@ -151,6 +162,34 @@ def createExcel(dict):
 		#	print state, year
 	pass
 
+def createRows(data):
+	rows = []
+	years = range(2003,2011)
+	for state in data:
+		state = str(state)
+		row = []
+		row.append(state)
+		try:
+			for year in years:
+				year = str(year)
+				row.append(year)
+				for cat in data[state][year]:
+					if cat == 'Age' or cat == 'Marital status':
+						continue
+					row.append(cat)
+					if cat == 'Occupation' or cat == "Leading countries of birth":
+						for k in data[state][year][cat]:
+							row.append(k)
+					else:
+						row.append(data[state][year][cat])
+		except:
+			print cat, state, year
+		rows.append(row)
+	for r in rows:
+		print r
+
+	return rows
+
 def main():
 	file = open('data.json', 'r')
 	line = file.readline()
@@ -159,7 +198,8 @@ def main():
 	
 	#createCSVFiles(DHS)
 	byState = dataByState(DHS)
-	writeCSV(byState)
+	states = createRows(byState)
+	writeCSV(states)
 	#print len(byState)	
 	#for k in sorted(byState, key=byState.get):
 	#	print k
