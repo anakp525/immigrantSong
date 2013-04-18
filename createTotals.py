@@ -175,6 +175,10 @@ def createRows(data):
 		for year in years:
 			year = str(year)
 			if year not in data[state]:
+				row.append(year)
+				for cat in cats:
+					row.append(cat)
+					row.append('')
 				continue
 			row.append(year)
 			for cat in cats:
