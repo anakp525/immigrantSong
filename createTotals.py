@@ -166,6 +166,7 @@ def createExcel(dict):
 
 def createRows(data):
 	rows = []
+	cats = ['number of immigrants', 'Occupation', 'Leading states of permanent residence', 'Leading countries of birth', 'number male', 'number female']
 	years = range(2003,2011)
 	for state in data:
 		state = str(state)
@@ -176,10 +177,13 @@ def createRows(data):
 			if year not in data[state]:
 				continue
 			row.append(year)
-			for cat in data[state][year]:
+			for cat in cats:
+				row.append(cat)
+				if cat not in data[state][year]:
+					row.append('')
+					continue
 				if cat == 'Age' or cat == 'Marital status':
 					continue
-				row.append(cat)
 				if cat == 'Occupation' or cat == "Leading states of permanent residence" or cat == "Leading countries of birth":
 					for k in data[state][year][cat]:
 						row.append(k)
