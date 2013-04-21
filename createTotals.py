@@ -2,20 +2,7 @@ import sys
 import json
 import os
 import csv
-
-def createBy(data, how):
-	fileName = how + '.csv'
-	# Get headings
-	headings = ['year', 'collectionType', '']
-	with open(fileName, 'wb') as file:
-		writer = csv.writer(file)
-		for state in data:
-			continue
-		
-	#file.close()
-
-def mergeAll():
-	pass
+import re
 
 def writeCSV(info, fileName):
 	with open(fileName, 'wb') as file:
@@ -23,19 +10,10 @@ def writeCSV(info, fileName):
 		for row in sorted(info, key = lambda x:x[0]):
 			line = []
 			for value in row:
-				if value == 'Occupation' or value == "Leading countries of birth" or value == "Leading states of permanent residence":
-					continue
 				line.append(value)
 			writer.writerow(line)
 		file.close()
 
-def createCSVFiles(data):
-	createBy(data, 'state of residence')
-	createBy(data, 'msa')
-	createBy(data, 'cbsa')
-	createBy(data, 'country of birth')
-	mergeAll()
-	
 def getTotal(row):
 	total = 0.0
 	m = row['m']
@@ -57,6 +35,8 @@ def dataByState(data, type = 'State of Residence'):
 				d[region] = {}
 			d[region][year] = {}
 			for cat in data[year][type][region]:
+				if region == ' Albania' and year == '2003':
+					print cat
 				cat = str(cat)
 				if cat == 'total':
 					m = data[year][type][region][cat]['m']
@@ -99,7 +79,6 @@ def dataByState(data, type = 'State of Residence'):
 	
 	#for key in sorted(US, key=lambda x:x[0]):
 	#	print key
-	
 	return d #US 
 
 def convertToDict(l):
@@ -156,15 +135,7 @@ def convertToDict(l):
 	return states
 	pass
 
-def createExcel(dict):
-	states = []
-	for state in dict:
-		row = ()
-		#for year in sorted(dict[state], key=lambda x:x[0]):
-		#	print state, year
-	pass
-
-def createRows(data):
+def createRows(data, vis = True):
 	rows = []
 	cats = ['number of immigrants', 'Occupation', 'Leading states of permanent residence', 'Leading countries of birth', 'number male', 'number female']
 	years = range(2003,2011)
@@ -175,27 +146,48 @@ def createRows(data):
 		for year in years:
 			year = str(year)
 			if year not in data[state]:
-				row.append(year)
+				if vis == True:
+					row.append(year)
 				for cat in cats:
-					row.append(cat)
-					row.append('')
-				continue
-			row.append(year)
-			for cat in cats:
-				row.append(cat)
-				if cat not in data[state][year]:
-					row.append('')
-					continue
-				if cat == 'Age' or cat == 'Marital status':
-					continue
-				if cat == 'Occupation' or cat == "Leading states of permanent residence" or cat == "Leading countries of birth":
-					for k in data[state][year][cat]:
-						row.append(k)
+					if vis == True:
+						row.append(cat)
+						row.append('')
+			else:
+				if vis == True:
+					row.append(year)
 				else:
-					row.append(data[state][year][cat])
-		rows.append(row)
-	for r in rows:
-		print r
+					row.append('year: '+ year)
+				for cat in cats:
+					if vis == True:
+						row.append(cat)
+					if cat not in data[state][year]:
+						if vis == True:
+							row.append('')
+						else:
+							row.append(cat + ': ?')
+						continue
+					if cat == 'Age' or cat == 'Marital status':
+						continue
+					if cat == 'Occupation' or cat == "Leading states of permanent residence" or cat == "Leading countries of birth":
+						for k in data[state][year][cat]:
+							if vis == True:
+								row.append(k)
+							else:
+								row.append(cat+ ': ' + str(k))
+					else:
+						if vis == True:
+							row.append(data[state][year][cat])
+						else:
+							row.append(cat + ': '+ str(data[state][year][cat]))
+			if vis == False:
+				if len(row) > 1:
+					rows.append(row)
+				row = []
+				row.append(state)
+		if vis == True:
+			rows.append(row)
+	#for r in rows:
+	#	print r
 
 	return rows
 
@@ -204,20 +196,18 @@ def main():
 	line = file.readline()
 	file.close()
 	DHS = json.loads(line)	
-	
-	#createCSVFiles(DHS)
+
 	byState = dataByState(DHS)
 	states = createRows(byState)
+	statesapriori = createRows(byState, False)
 	writeCSV(states, 'US.csv')
-	#print len(byState)	
-	#for k in sorted(byState, key=byState.get):
-	#	print k
-	#d = convertToDict(byState)
-	#createExcel(d)
+	writeCSV(statesapriori, 'USapriori.csv')
 
 	byCountry = dataByState(DHS, 'Country of Birth')
 	countries = createRows(byCountry)
+	countriesapriori = createRows(byCountry, False)
 	writeCSV(countries, 'world.csv')
-	#print DHS
+	writeCSV(countriesapriori, 'worldapriori.csv')
+
 
 main()
