@@ -29,10 +29,13 @@ def perYear(DHS):
 	plt.ylabel("Number of immigrants")
 	plt.xlabel("Year")
 	plt.xticks([2003,2004,2005,2006,2007,2008,2009,2010])
-	print years
-	print people
 	plt.plot(years,people)
 	plt.show()
+
+	with open('immigration per year.csv', 'wb') as csvFile:
+		writer = csv.writer(csvFile)
+		writer.writerow(years)
+		writer.writerow(people)
 
 def getStates(info):
 	states = {}
