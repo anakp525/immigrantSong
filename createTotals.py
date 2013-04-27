@@ -254,6 +254,30 @@ def createStateApriori(data):
 				rows.append(row)
 	return rows
 
+def getCountries(data):
+	l = [key for key in data]
+	rows = []
+	for country in sorted(l, key=lambda x:x[0]):
+		rows.append([country])
+	return rows
+
+def getTopCountries(data):
+	rows = []
+	cs = []
+	for state in data:
+		for year in data[state]:
+			row = []
+			if 'Leading countries of birth' in data[state][year]:
+				for c in data[state][year]['Leading countries of birth']:
+					row.append(c)
+					if [c] not in cs:
+						cs.append([c])
+				row.append(year)
+				row.append(state)
+				rows.append(row)
+	print cs
+	return rows, cs
+
 def main():
 	file = open('data.json', 'r')
 	line = file.readline()
@@ -272,5 +296,10 @@ def main():
 	writeCSV(countries, 'world.csv')
 	writeCSV(countriesapriori, 'worldapriori.csv')
 
+	countries = getCountries(byCountry)
+	writeCSV(countries, 'allcountries.csv')
 
+	topCountries, unique = getTopCountries(byState)
+	writeCSV(topCountries, 'topCountries.csv')
+	writeCSV(list(unique), 'uniqueCountries.csv')
 main()
