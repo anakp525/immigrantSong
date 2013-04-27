@@ -191,6 +191,69 @@ def createRows(data, vis = True):
 
 	return rows
 
+def killCommas(row):
+	return re.sub(r',', '/', row)
+		
+def createCountryApriori(data):
+	years = range(2003,2011)
+	cats = ['number of immigrants', 'number male', 'number female']
+	cats2 = ['Occupation', 'Leading states of permanent residence', 'Age', 'Marital Status']
+	
+	rows = []
+	for state in data:
+		state = str(state)
+		for year in years:
+			year = str(year)
+			row = []
+			if year in data[state]:
+				row.append(str(state))
+				row.append(str(year))
+				for cat in cats:
+					if cat in data[state][year]:
+						newRow = killCommas(str(data[state][year][cat]))
+						row.append(cat + ': ' + newRow)
+					else:
+						row.append(cat + ': ?')
+				for cat in cats2:
+					if cat in data[state][year]:
+						for k in data[state][year][cat]:
+							k = killCommas(k)
+							row.append(cat + ': ' + k)
+					else:
+						row.append(cat + ': ?')
+				rows.append(row)
+	return rows
+
+def createStateApriori(data):
+	years = range(2003,2011)
+	cats = ['number of immigrants', 'number male', 'number female']
+	cats2 = ['Occupation', 'Leading countries of birth', 'Age', 'Marital Status']
+	
+	rows = []
+	for state in data:
+		state = str(state)
+		for year in years:
+			year = str(year)
+			row = []
+			if year in data[state]:
+				row.append(str(state))
+				row.append(str(year))
+				for cat in cats:
+					if cat in data[state][year]:
+						newRow = killCommas(str(data[state][year][cat]))
+						row.append(cat + ': ' + newRow)
+					else:
+						row.append(cat + ': ?')
+				for cat in cats2:
+					if cat in data[state][year]:
+						for k in data[state][year][cat]:
+							k = killCommas(k)
+							row.append(cat + ': ' + k)
+					else:
+						row.append(cat + ': ?')
+				rows.append(row)
+	return rows
+
 def main():
 	file = open('data.json', 'r')
 	line = file.readline()
@@ -199,13 +262,13 @@ def main():
 
 	byState = dataByState(DHS)
 	states = createRows(byState)
-	statesapriori = createRows(byState, False)
+	statesapriori = createStateApriori(byState)
 	writeCSV(states, 'US.csv')
 	writeCSV(statesapriori, 'USapriori.csv')
 
 	byCountry = dataByState(DHS, 'Country of Birth')
 	countries = createRows(byCountry)
-	countriesapriori = createRows(byCountry, False)
+	countriesapriori = createCountryApriori(byCountry)
 	writeCSV(countries, 'world.csv')
 	writeCSV(countriesapriori, 'worldapriori.csv')
 
