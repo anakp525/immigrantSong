@@ -21,7 +21,7 @@ def getTotal(row):
 	u = row['u']
 	return m+f+u
 
-def dataByState(data, type = 'State of Residence'):
+def dataByState(data, type = 'State of Residence', top = True):
 	d = {}
 	US = []
 	numberImmigrants = 0
@@ -59,17 +59,13 @@ def dataByState(data, type = 'State of Residence'):
 					#	d[region][year][cat][value] = {}
 					total = getTotal(data[year][type][region][cat][value])
 					numberImmigrants = numberImmigrants + total
-					if total > topValue[1]:
-						topValue = (str(value), total)
-					"""for gender in data[year][type][region][cat][value]:
-						if gender not in d[region][year][cat][value]:
-							d[region][year][cat][value][gender] = data[year][type][region][cat][value][gender]
-					
-					m = data[year][type][region][cat][value]['m']
-					f = data[year][type][region][cat][value]['f']
-					u = data[year][type][region][cat][value]['u']
-					"""
-				d[region][year][cat][topValue[0]] = topValue[1]
+					if top == True:
+						if total > topValue[1]:
+							topValue = (str(value), total)
+					else:
+						d[region][year][cat][value] = total
+				if top == True:
+					d[region][year][cat][topValue[0]] = topValue[1]
 				#print numberImmigrants
 				if numberImmigrants == 0:
 					US.append( (region, year, cat, topValue, 100.0) )
@@ -283,13 +279,17 @@ def main():
 	line = file.readline()
 	file.close()
 	DHS = json.loads(line)	
+	print DHS
 
 	byState = dataByState(DHS)
 	states = createRows(byState)
+	states2 = createRows(byState, False)
+	print states2
 	statesapriori = createStateApriori(byState)
 	writeCSV(states, 'US.csv')
 	writeCSV(statesapriori, 'USapriori.csv')
-
+	writeCSV(states2, 'USapriori2.csv')
+	
 	byCountry = dataByState(DHS, 'Country of Birth')
 	countries = createRows(byCountry)
 	countriesapriori = createCountryApriori(byCountry)
